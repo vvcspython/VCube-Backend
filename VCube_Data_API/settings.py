@@ -37,20 +37,21 @@ X_FRAME_OPTIONS = 'DENY'
 
 ALLOWED_HOSTS = [
     '127.0.0.1', 
-    'localhost'
+    'localhost',
+    'vcube-backend.onrender.com',
 ]
-
 
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:3000',
+    'https://vcube-backend.onrender.com',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:3000',
+    'https://vcube-backend.onrender.com',
 ]
-
 
 # Application definition
 
