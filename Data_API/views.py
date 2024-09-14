@@ -4,18 +4,16 @@ import random
 from django.core.mail import send_mail
 from rest_framework import status
 from django.conf import settings
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
 load_dotenv()
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import UsersLoginData, SendOTP    
 from .serializers import SendOTPSerializer
-from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from django.middleware.csrf import get_token
