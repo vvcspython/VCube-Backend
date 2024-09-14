@@ -115,7 +115,12 @@ class CheckAuthView(APIView):
     
     
 class UserRegisterView(APIView):
-
+    
+    def get(self, request):
+        users = UsersLoginData.objects.all()
+        serializer = LoginDataSerializer(data=users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
     def post(self, request):
         user_count = UsersLoginData.objects.count()
 
