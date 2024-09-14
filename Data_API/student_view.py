@@ -1,18 +1,14 @@
-from django.db.models.expressions import RawSQL
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import AccessToken
 from django.utils import timezone
 from datetime import timedelta
 from .models import StudentData, PermissionsData
 from .serializers import StudentDataSerializer
 from .decorators import token_required, csrf_required
-from django.core.cache import cache
 from cryptography.fernet import Fernet
 from django.http import JsonResponse
 import mysql.connector
@@ -22,7 +18,6 @@ import json
 from dotenv import load_dotenv
 load_dotenv()
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.middleware.csrf import get_token
 
 
