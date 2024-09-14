@@ -1,15 +1,9 @@
-from rest_framework import generics
-from rest_framework import generics, permissions, status
+from rest_framework import status
 from django.contrib.auth.hashers import make_password, check_password
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework_simplejwt.exceptions import TokenError
 from .models import UsersLoginData, SendOTP
 from .serializers import LoginDataSerializer
 from .decorators import token_required
