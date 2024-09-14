@@ -7,8 +7,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .decorators import token_required
 from rest_framework import status
-from rest_framework.decorators import api_view
-from django.http import JsonResponse, HttpResponseBadRequest
 from .models import StudentData
 import mysql.connector
 from mysql.connector import Error
@@ -16,17 +14,12 @@ from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 load_dotenv()
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
 import json
 import mysql.connector
 from mysql.connector import Error, pooling
 import logging
 import re
-import signal
 import sys
-import io
-import traceback
-import threading
 from decimal import Decimal
 import datetime
 
