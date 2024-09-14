@@ -3,7 +3,7 @@ bcrypt==4.2.0
 cffi==1.15.1
 colorama==0.4.6
 cryptography==43.0.0
-django-cors-headers==4.4.0
+django-cors-headers==4.1.0
 et-xmlfile==1.1.0
 mysql==0.0.3
 mysqlclient==2.2.4
