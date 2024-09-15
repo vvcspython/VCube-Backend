@@ -373,7 +373,7 @@ class Execute_Java_Code(APIView):
         if javac_path:
             return [javac_path, source_file]
         else:
-            return ['java', source_file] # here i have changes from javac to java
+            return ['javac', source_file] # here i have changes from javac to java
 
     def get_java_command(self, classpath, class_name):
         java_path = self.find_java_path()
