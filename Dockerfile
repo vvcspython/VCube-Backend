@@ -15,20 +15,29 @@ RUN apt-get install -y gcc g++ make
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs
 
-# Copy requirements and install Python dependencies
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --upgrade pip && \
-    pip install -r /tmp/requirements.txt && \
-    rm -rf /root/.cache/
+# Create a non-root user
+RUN useradd -m myuser
 
-# Copy the entire application code
-COPY . /code
+# Set the non-root user
+USER myuser
 
 # Set working directory
-WORKDIR /code
+WORKDIR /home/myuser/code
+
+# Copy the entire application code
+COPY --chown=myuser:myuser . /home/myuser/code
+
+# Copy requirements and install Python dependencies in a virtual environment
+RUN python -m venv /home/myuser/venv && \
+    /home/myuser/venv/bin/pip install --upgrade pip && \
+    /home/myuser/venv/bin/pip install -r /home/myuser/code/requirements.txt && \
+    rm -rf /root/.cache/
 
 # Expose the port the app runs on
 EXPOSE 8000
 
-# Command to run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "VCube_Data_API.wsgi:application"]
+# Create an entrypoint script to run Django management commands and start the server
+COPY entrypoint.sh /home/myuser/
+RUN chmod +x /home/myuser/entrypoint.sh
+
+ENTRYPOINT ["/home/myuser/entrypoint.sh"]
