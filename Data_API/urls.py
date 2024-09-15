@@ -4,8 +4,6 @@ from .import user_views
 from .import student_view
 from .import managing_data_view
 from .import code_execute
-from rest_framework.documentation import include_docs_urls
-from rest_framework import permissions
 
 urlpatterns = [
     path('user/login/', user_views.LoginView.as_view(), name='user-login'),
@@ -50,6 +48,4 @@ urlpatterns = [
     path('execute-code/java/',code_execute.Execute_Java_Test_Cases.as_view(),name='execute-java'),
     path('execute-code/c/',code_execute.Execute_C_Test_Cases.as_view(),name='execute-c'),
     path('execute-code/cpp/',code_execute.Execute_CPP_Test_Cases.as_view(),name='execute-cpp'),
-
-    path('docs/', include_docs_urls(title='API Documentation', permission_classes=[permissions.AllowAny])),
 ]
