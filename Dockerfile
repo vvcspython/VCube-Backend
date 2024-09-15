@@ -17,8 +17,11 @@ RUN pip install --upgrade pip && \
 # Copy the entire application code
 COPY . /code
 
-# Make the release script executable
-RUN chmod +x /code/release.sh
+# Set working directory
+WORKDIR /code
 
-# Define the command to run your application
-CMD ["sh", "/code/release.sh"]
+# Expose the port the app runs on
+EXPOSE 8000
+
+# Command to run the application
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "VCube_Data_API.wsgi:application"]
