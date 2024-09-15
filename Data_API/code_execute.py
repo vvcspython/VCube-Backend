@@ -298,7 +298,6 @@ class Execute_Python_Code(APIView):
 
 @method_decorator(token_required, name='dispatch')
 class Execute_Java_Code(APIView):
-    #working
     def post(self, request):
         try:
             data = request.data
@@ -325,7 +324,7 @@ class Execute_Java_Code(APIView):
                 with open(source_file, 'w') as file:
                     file.write(code)
 
-                compile_command = ['javac', source_file]
+                compile_command = self.get_javac_command(source_file)
                 try:
                     compile_process = subprocess.run(
                         compile_command,
@@ -341,7 +340,7 @@ class Execute_Java_Code(APIView):
                 except subprocess.TimeoutExpired:
                     return Response({'error': 'Compilation time limit exceeded'}, status=status.HTTP_408_REQUEST_TIMEOUT)
 
-                run_command = ['java', '-cp', temp_dir, class_name]
+                run_command = self.get_java_command(temp_dir, class_name)
                 try:
                     start_time = time.time()
                     run_process = subprocess.Popen(
@@ -367,7 +366,33 @@ class Execute_Java_Code(APIView):
                     return Response({'error': 'Execution time limit exceeded'}, status=status.HTTP_408_REQUEST_TIMEOUT)
 
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)      
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get_javac_command(self, source_file):
+        javac_path = self.find_javac_path()
+        if javac_path:
+            return [javac_path, source_file]
+        else:
+            return ['javac', source_file]
+
+    def get_java_command(self, classpath, class_name):
+        java_path = self.find_java_path()
+        if java_path:
+            return [java_path, '-cp', classpath, class_name]
+        else:
+            return ['java', '-cp', classpath, class_name]
+
+    def find_javac_path(self):
+        try:
+            return subprocess.check_output(['which', 'javac']).decode('utf-8').strip()
+        except subprocess.CalledProcessError:
+            return None
+
+    def find_java_path(self):
+        try:
+            return subprocess.check_output(['which', 'java']).decode('utf-8').strip()
+        except subprocess.CalledProcessError:
+            return None    
 
 @method_decorator(token_required, name='dispatch')
 class Execute_C_Code(APIView):
