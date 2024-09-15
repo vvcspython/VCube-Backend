@@ -1,6 +1,7 @@
 FROM python:3.11-slim
 
 # Install system dependencies
+USER root
 RUN apt-get update && \
     apt-get install -y gcc g++ openjdk-11-jdk build-essential
 
@@ -9,11 +10,13 @@ WORKDIR /app
 COPY . /app
 
 # Install Python dependencies
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
 
-# Add an entrypoint script
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Run migrations and collect static files
+RUN python manage.py makemigrations && \
+    python manage.py migrate && \
+    python manage.py collectstatic --noinput
 
 # Define the command to run your application
-CMD ["/entrypoint.sh"]
+CMD ["gunicorn", "VCube_Data_API.wsgi:application", "--bind", "0.0.0.0:8000"]
