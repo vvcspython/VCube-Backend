@@ -1,23 +1,12 @@
-FROM python:3.10-slim-buster
+FROM python:3.9
 
-# Set non-interactive mode for apt-get
-ARG DEBIAN_FRONTEND=noninteractive
+# Install Java
+RUN apt-get update && \
+    apt-get install -y openjdk-17-jdk
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
-# Create a directory for the app
-RUN mkdir -p /code
-WORKDIR /code
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    gcc \
-    cron \
-    wkhtmltopdf \
-    && rm -rf /var/lib/apt/lists/*
+# Set JAVA_HOME
+ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH $PATH:$JAVA_HOME/bin
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt /tmp/requirements.txt
