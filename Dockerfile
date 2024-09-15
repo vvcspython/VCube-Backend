@@ -22,22 +22,21 @@ RUN useradd -m myuser
 USER myuser
 
 # Set working directory
-WORKDIR /home/myuser/code
+WORKDIR /code
 
 # Copy the entire application code
-COPY --chown=myuser:myuser . /home/myuser/code
+COPY --chown=myuser:myuser . /code
 
 # Copy requirements and install Python dependencies in a virtual environment
-RUN python -m venv /home/myuser/venv && \
-    /home/myuser/venv/bin/pip install --upgrade pip && \
-    /home/myuser/venv/bin/pip install -r /home/myuser/code/requirements.txt && \
-    rm -rf /root/.cache/
+RUN python -m venv /code/venv && \
+    /code/venv/bin/pip install --upgrade pip && \
+    /code/venv/bin/pip install -r /code/requirements.txt
 
 # Expose the port the app runs on
 EXPOSE 8000
 
 # Create an entrypoint script to run Django management commands and start the server
-COPY entrypoint.sh /home/myuser/
-RUN chmod +x /home/myuser/entrypoint.sh
+COPY entrypoint.sh /code/
+RUN chmod +x /code/entrypoint.sh
 
-ENTRYPOINT ["/home/myuser/entrypoint.sh"]
+ENTRYPOINT ["/code/entrypoint.sh"]
