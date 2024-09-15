@@ -8,6 +8,13 @@ RUN apt-get update && \
 ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
 ENV PATH $PATH:$JAVA_HOME/bin
 
+# Install C and C++ compilers
+RUN apt-get install -y gcc g++ make
+
+# Install Node.js and npm (for JavaScript)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
+
 # Copy requirements and install Python dependencies
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --upgrade pip && \
