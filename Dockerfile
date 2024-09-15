@@ -18,25 +18,25 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
 # Create a non-root user
 RUN useradd -m myuser
 
-# Set the non-root user
-USER myuser
-
 # Set working directory
 WORKDIR /code
 
 # Copy the entire application code
-COPY --chown=myuser:myuser . /code
+COPY . /code
 
-# Copy requirements and install Python dependencies in a virtual environment
+# Change ownership of the /code directory to the non-root user
+RUN chown -R myuser:myuser /code
+
+# Switch to non-root user
+USER myuser
+
+# Create a virtual environment and install Python dependencies
 RUN python -m venv /code/venv && \
     /code/venv/bin/pip install --upgrade pip && \
     /code/venv/bin/pip install -r /code/requirements.txt
 
-# Expose the port the app runs on
-EXPOSE 8000
+# Ensure permissions are correct for the application code
+RUN chmod -R u+rwX /code
 
-# Create an entrypoint script to run Django management commands and start the server
-COPY entrypoint.sh /code/
-RUN chmod +x /code/entrypoint.sh
-
-ENTRYPOINT ["/code/entrypoint.sh"]
+# Run migrations and start the application
+CMD ["/bin/sh", "-c", "/code/venv/bin/python manage.py makemigrations && /code/venv/bin/python manage.py migrate && /code/venv/bin/gunicorn --bind 0.0.0.0:8000 VCube_Data_API.wsgi:application"]
