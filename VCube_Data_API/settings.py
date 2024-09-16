@@ -38,25 +38,22 @@ X_FRAME_OPTIONS = 'DENY'
 ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost',
-    'vcube.onrender.com',
+    'v-cube-git-main-ahammad0814s-projects.vercel.app',
     'vcube-backend-api.onrender.com',
-    'stupendous-rolypoly-13c167.netlify.app',
 ]
 
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:3000',
-    'https://vcube.onrender.com',
+    'https://v-cube-git-main-ahammad0814s-projects.vercel.app',
     'https://vcube-backend-api.onrender.com',
-    'https://stupendous-rolypoly-13c167.netlify.app',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:3000',
-    'https://vcube.onrender.com',
+    'https://v-cube-git-main-ahammad0814s-projects.vercel.app',
     'https://vcube-backend-api.onrender.com',
-    'https://stupendous-rolypoly-13c167.netlify.app',
 ]
 
 # Application definition
@@ -87,10 +84,10 @@ MIDDLEWARE = [
 ]
 
 CSP_DEFAULT_SRC = ["'self'"]
-CSP_SCRIPT_SRC = ["'self'", "http://localhost:3000","https://vcube.onrender.com"]
-CSP_STYLE_SRC = ["'self'", "http://localhost:3000","https://vcube.onrender.com"]
-CSP_IMG_SRC = ["'self'", "http://localhost:3000","https://vcube.onrender.com"]
-CSP_CONNECT_SRC = ["'self'", "http://localhost:3000","https://vcube.onrender.com"]
+CSP_SCRIPT_SRC = ["'self'", "http://localhost:3000","https://v-cube-git-main-ahammad0814s-projects.vercel.app/"]
+CSP_STYLE_SRC = ["'self'", "http://localhost:3000","https://v-cube-git-main-ahammad0814s-projects.vercel.app/"]
+CSP_IMG_SRC = ["'self'", "http://localhost:3000","https://v-cube-git-main-ahammad0814s-projects.vercel.app/"]
+CSP_CONNECT_SRC = ["'self'", "http://localhost:3000","https://v-cube-git-main-ahammad0814s-projects.vercel.app/"]
 
 
 ROOT_URLCONF = 'VCube_Data_API.urls'
