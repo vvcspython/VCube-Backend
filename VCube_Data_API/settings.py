@@ -40,7 +40,7 @@ ALLOWED_HOSTS = [
     'localhost',
     'vcube.onrender.com',
     'vcube-backend-api.onrender.com',
-    '66e821070165a82a6d9fae45--stupendous-rolypoly-13c167.netlify.app',
+    'stupendous-rolypoly-13c167.netlify.app',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -48,7 +48,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'https://vcube.onrender.com',
     'https://vcube-backend-api.onrender.com',
-    'https://66e821070165a82a6d9fae45--stupendous-rolypoly-13c167.netlify.app/',
+    'https://stupendous-rolypoly-13c167.netlify.app',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -56,7 +56,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
     'https://vcube.onrender.com',
     'https://vcube-backend-api.onrender.com',
-    'https://66e821070165a82a6d9fae45--stupendous-rolypoly-13c167.netlify.app/',
+    'https://stupendous-rolypoly-13c167.netlify.app',
 ]
 
 # Application definition
