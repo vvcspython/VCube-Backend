@@ -38,18 +38,21 @@ X_FRAME_OPTIONS = 'DENY'
 ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost',
+    'vcube.onrender.com',
     'vcube-backend-api.onrender.com',
 ]
 
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:3000',
+    'https://vcube.onrender.com',
     'https://vcube-backend-api.onrender.com',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:3000',
+    'https://vcube.onrender.com',
     'https://vcube-backend-api.onrender.com',
 ]
 
@@ -81,10 +84,10 @@ MIDDLEWARE = [
 ]
 
 CSP_DEFAULT_SRC = ["'self'"]
-CSP_SCRIPT_SRC = ["'self'", "http://localhost:3000"]
-CSP_STYLE_SRC = ["'self'", "http://localhost:3000"]
-CSP_IMG_SRC = ["'self'", "http://localhost:3000"]
-CSP_CONNECT_SRC = ["'self'", "http://localhost:3000"]
+CSP_SCRIPT_SRC = ["'self'", "http://localhost:3000","https://vcube.onrender.com"]
+CSP_STYLE_SRC = ["'self'", "http://localhost:3000","https://vcube.onrender.com"]
+CSP_IMG_SRC = ["'self'", "http://localhost:3000","https://vcube.onrender.com"]
+CSP_CONNECT_SRC = ["'self'", "http://localhost:3000","https://vcube.onrender.com"]
 
 
 ROOT_URLCONF = 'VCube_Data_API.urls'
@@ -119,18 +122,6 @@ WSGI_APPLICATION = 'VCube_Data_API.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': env('DATABASE_NAME'),
-#         'USER' : env('DATABASE_USER'),
-#         'PASSWORD' : env('DATABASE_PASSWORD'),
-#         'HOST' : 'localhost',
-#         'PORT' : 3306,
-#     }
-# }
 
 DATABASES = {
     'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
