@@ -37,22 +37,19 @@ X_FRAME_OPTIONS = 'DENY'
 
 ALLOWED_HOSTS = [
     '127.0.0.1', 
-    'localhost',
-    'v-cube-git-main-ahammad0814s-projects.vercel.app',
+    'v-cube.vercel.app',
     'vcube-backend-api.onrender.com',
 ]
 
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
-    'http://localhost:3000',
-    'https://v-cube-git-main-ahammad0814s-projects.vercel.app',
+    'https://v-cube.vercel.app/',
     'https://vcube-backend-api.onrender.com',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
-    'http://localhost:3000',
-    'https://v-cube-git-main-ahammad0814s-projects.vercel.app',
+    'https://v-cube.vercel.app/',
     'https://vcube-backend-api.onrender.com',
 ]
 
@@ -83,11 +80,17 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 CSP_DEFAULT_SRC = ["'self'"]
-CSP_SCRIPT_SRC = ["'self'", "http://localhost:3000","https://v-cube-git-main-ahammad0814s-projects.vercel.app/"]
-CSP_STYLE_SRC = ["'self'", "http://localhost:3000","https://v-cube-git-main-ahammad0814s-projects.vercel.app/"]
-CSP_IMG_SRC = ["'self'", "http://localhost:3000","https://v-cube-git-main-ahammad0814s-projects.vercel.app/"]
-CSP_CONNECT_SRC = ["'self'", "http://localhost:3000","https://v-cube-git-main-ahammad0814s-projects.vercel.app/"]
+CSP_SCRIPT_SRC = ["'self'", "http://localhost:3000","https://v-cube.vercel.app/"]
+CSP_STYLE_SRC = ["'self'", "http://localhost:3000","https://v-cube.vercel.app/"]
+CSP_IMG_SRC = ["'self'", "http://localhost:3000","https://v-cube.vercel.app/"]
+CSP_CONNECT_SRC = ["'self'", "http://localhost:3000","https://v-cube.vercel.app/"]
 
 
 ROOT_URLCONF = 'VCube_Data_API.urls'
