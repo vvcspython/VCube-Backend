@@ -15,17 +15,12 @@ class UsersLoginData(models.Model):
     Permission = models.CharField(max_length=255, default='Access')
     AddedBy = models.CharField(max_length=255, default='Self')
     Joined_At = models.DateTimeField(default=timezone.now)
+    DrivePassword = models.CharField(max_length=255, default='N/A')
 
-    def __str__(self):
-        return self.Username
-   
 class BatchData(models.Model):
     BatchName = models.CharField(max_length=25, default='N/A')
     Course = models.CharField(max_length=255, default='N/A')
     Date = models.CharField(max_length=225, default='N/A')
-
-    def __str__(self):
-        return f"{self.BatchName} - {self.Course}"
 
 class BatchAttendance(models.Model):
     BatchID = models.ForeignKey(BatchData, on_delete=models.CASCADE, related_name='attendances',null=True)
@@ -33,9 +28,13 @@ class BatchAttendance(models.Model):
     Course = models.CharField(max_length=255, default='N/A')
     Date = models.CharField(max_length=255, default='N/A')
     Attendance_Type = models.CharField(max_length=255, default='N/A')
-
-    def __str__(self):
-        return f"{self.batch.BatchName} - {self.Date} - {self.Attendance_Type}"                
+    
+class PermissionsData(models.Model):
+    BatchID = models.ForeignKey(BatchData, on_delete=models.CASCADE, related_name='permissions',null=True)
+    Course = models.CharField(max_length=255,default='N/A')
+    BatchName = models.CharField(max_length=255,default='N/A')
+    Edit_Access = models.CharField(max_length=25, default='Denied')
+    Login_Access = models.CharField(max_length=25, default='Access')        
 
 class StudentData(models.Model):
     Name = models.CharField(max_length=255, default='N/A')
@@ -49,9 +48,7 @@ class StudentData(models.Model):
     Student_Config = models.BinaryField(default=b'')
     Status = models.CharField(max_length=255, default='Active')
     Permission = models.CharField(max_length=25, default='Access')
-
-    def __str__(self):
-        return self.Name
+    Joining_Date = models.CharField(max_length=255, default='N/A')
 
 class StudentAttendance(models.Model):
     StudentId = models.ForeignKey(StudentData, on_delete=models.CASCADE, related_name='attendances',null=True)
@@ -60,9 +57,6 @@ class StudentAttendance(models.Model):
     BatchName = models.CharField(max_length=255, default='N/A')
     Date = models.CharField(max_length=255, default='N/A')
     Attendance_Type = models.CharField(max_length=255, default='N/A')
-
-    def __str__(self):
-        return f"{self.student.Personal_Info} - {self.Course} - {self.Date} - {self.Attendance_Type}"
     
 class StudentWatchTimeData(models.Model):
     StudentId = models.ForeignKey(StudentData, on_delete=models.CASCADE, related_name='watchtime',null=True)
@@ -84,11 +78,13 @@ class BatchToStudentMessagesData(models.Model):
     BatchMessage = models.JSONField(default=dict)
 
 class BatchMessagesData(models.Model):
+    BatchID = models.ForeignKey(BatchData, on_delete=models.CASCADE, related_name='batch_messages',null=True)
     Course = models.CharField(max_length=255,default='N/A')
     BatchName = models.CharField(max_length=255,default='N/A')
     BatchMessage = models.JSONField(default=dict)
     
 class StudentMessagesData(models.Model):
+    StudentId = models.ForeignKey(StudentData, on_delete=models.CASCADE, related_name='student_messages',null=True)
     Course = models.CharField(max_length=255,default='N/A')
     BatchName = models.CharField(max_length=255,default='N/A')
     StudentMessage = models.JSONField(default=dict)
@@ -145,9 +141,20 @@ class SendOTP(models.Model):
 class SendMail(models.Model):
     Email = models.CharField(max_length=255)
     OTP = models.JSONField(default=dict)
+
+class ReportData(models.Model):
+    Date = models.CharField(max_length=255, default='N/A')
+    Error_Type = models.TextField(default='N/A')
+    Error_Message = models.TextField(default='N/A')
+    Status = models.CharField(max_length=255, default='UnSolved')
     
-class PermissionsData(models.Model):
-    Course = models.CharField(max_length=255,default='N/A')
-    BatchName = models.CharField(max_length=255,default='N/A')
-    Edit_Access = models.CharField(max_length=25, default='Denied')
-    Login_Access = models.CharField(max_length=25, default='Access')
+class UsersDriveData(models.Model):
+    Username = models.CharField(max_length=255, default='N/A')
+    Email = models.EmailField(max_length=255, default='N/A')
+    Course = models.CharField(max_length=255, default='N/A')
+    Folder = models.CharField(max_length=255, default='N/A')
+    FileName = models.CharField(max_length=255, default='N/A')
+    File = models.TextField(default='N/A')
+    Size = models.CharField(max_length=255, default='N/A')
+    Date = models.CharField(max_length=255, default='N/A')
+    
