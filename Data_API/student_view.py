@@ -8,7 +8,7 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import StudentData, PermissionsData
 from .serializers import StudentDataSerializer
-from .decorators import token_required, csrf_required
+from .decorators import token_required
 from cryptography.fernet import Fernet
 from django.http import JsonResponse
 import mysql.connector
@@ -62,6 +62,16 @@ class StudentLoginView(APIView):
         else:
             return Response({"error": "Invalid Details"}, status=status.HTTP_401_UNAUTHORIZED)
 
+
+
+
+class DeleteAllStudentsData(APIView):
+
+    def delete(self, request):
+        StudentData.objects.all().delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        
+        
 
 class CheckStudentMailView(APIView):
     
