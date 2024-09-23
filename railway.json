@@ -1,0 +1,12 @@
+{
+  "build": {
+    "command": "pip install -r requirements.txt && python manage.py collectstatic --noinput",
+    "env": {
+      "SECRET_KEY": "LSFAVdq86JnAUhIpP_fbk1KwpgQbY-Sy9a5JklgzCzV4qn9KChqW35K7nVSrDPAbuZU",
+      "DATABASE_URL": "postgresql://vcube_user:j3zgHQJ859S6lktpiuIz0Z07gMnI6KQw@dpg-crihf9jv2p9s738i6bpg-a.oregon-postgres.render.com/vcube_database"
+    }
+  },
+  "start": {
+    "command": "gunicorn your_project_name.wsgi"
+  }
+}
