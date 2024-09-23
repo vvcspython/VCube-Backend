@@ -39,18 +39,21 @@ ALLOWED_HOSTS = [
     '127.0.0.1', 
     'v-cube.vercel.app',
     'vcube-backend-api.onrender.com',
+    'v-cube-backend.vercel.app',
 ]
 
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
     'https://v-cube.vercel.app',
     'https://vcube-backend-api.onrender.com',
+    'https://v-cube-backend.vercel.app',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'https://v-cube.vercel.app',
     'https://vcube-backend-api.onrender.com',
+    'https://v-cube-backend.vercel.app',
 ]
 
 # Application definition
