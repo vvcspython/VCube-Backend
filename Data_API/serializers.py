@@ -7,7 +7,7 @@ from .models import (
     PlacementFeedbackData,PlacementPosts,AdminMessages,
     BatchToStudentMessagesData,AssessmentQuestionsData,
     ClassRecordingsData,StudentWatchTimeData,PermissionsData,
-    FeedbackFormLists
+    FeedbackFormLists,ReportData,UsersDriveData
 )
 class LoginDataSerializer(ModelSerializer):
     class Meta:
@@ -107,4 +107,14 @@ class PermissionsDataSerializer(ModelSerializer):
 class FeedbackFormListsSerializer(ModelSerializer):
     class Meta:
         model = FeedbackFormLists
+        fields = '__all__'
+        
+class ReportDataSerializer(ModelSerializer):
+    class Meta:
+        model = ReportData
+        fields = '__all__'
+        
+class UsersDriveDataSerializer(ModelSerializer):
+    class Meta:
+        model = UsersDriveData
         fields = '__all__'
