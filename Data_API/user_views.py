@@ -4,8 +4,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.response import Response
-from .models import UsersLoginData, SendOTP
-from .serializers import LoginDataSerializer
+from .models import UsersLoginData, SendOTP, UsersDriveData
+from .serializers import LoginDataSerializer, UsersDriveDataSerializer
 from .decorators import token_required
 from django.utils.decorators import method_decorator
 from django.middleware.csrf import get_token
@@ -73,6 +73,7 @@ class LoginView(APIView):
                         'Permission': user.Permission,
                         'AddedBy': user.AddedBy,
                         'Joined_At': user.Joined_At,
+                        'Drive': 'Not Registered' if user.DrivePassword == 'N/A' else 'Registered'
                     }
                     return Response({
                         'user' : user_data,
@@ -120,7 +121,7 @@ class UserRegisterView(APIView):
         users = UsersLoginData.objects.all()
         serializer = LoginDataSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-        
+
     def post(self, request):
         user_count = UsersLoginData.objects.count()
 
@@ -303,7 +304,7 @@ class CheckUserDetails(APIView):
         
         return Response(status=status.HTTP_202_ACCEPTED)
 
-@token_required
+@method_decorator(token_required, name='dispatch')
 class UserPasswordChangeView(APIView):
     
     def post(self, request, id):
@@ -329,7 +330,165 @@ class UserPasswordChangeView(APIView):
         else:
             return Response({'error': 'Invalid user ID.'}, status=status.HTTP_400_BAD_REQUEST)
     
-    
+
+@method_decorator(token_required, name='dispatch')
+class UsersDriveDataView(APIView):
+
+    def authenticate_user(self, email, username, course, password):
+        try:
+            user = UsersLoginData.objects.get(Course=course, Username=username, Email=email)
+        except UsersLoginData.DoesNotExist:
+            return None, {'message': 'User not found'}, status.HTTP_404_NOT_FOUND
+
+        if user.Permission != 'Access':
+            return None, {'error': 'Access denied'}, status.HTTP_403_FORBIDDEN
+
+        if not check_password(retrieve_digits_from_positions(password), user.DrivePassword):
+            return None, {'error': 'Invalid credentials'}, status.HTTP_401_UNAUTHORIZED
+
+        return user, None, None
+
+    def put(self, request, username, course):
+        password = request.data.get('DrivePassword')
+        email = request.data.get('Email')
+
+        user, error_response, status_code = self.authenticate_user(email, username, course, password)
+        if error_response:
+            return Response(error_response, status=status_code)
+
+        data = UsersDriveData.objects.filter(Course=course, Username=username, Email=email)
+
+        serializer = UsersDriveDataSerializer(data, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, username, course):
+        user, error_response, status_code = self.authenticate_user(request.data[0].get('Email'), username, course, request.data[0].get('DrivePassword'))
+        if error_response:
+            return Response(error_response, status=status_code)
+
+        data = request.data
+        if not isinstance(data, list):
+            return Response({'error': 'Data must be a list of students'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        for item in request.data:
+            if 'DrivePassword' in item:
+                item.pop('DrivePassword')
+                
+        serializer = UsersDriveDataSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            driveData = [UsersDriveData(**item) for item in serializer.validated_data]
+            UsersDriveData.objects.bulk_create(driveData)
+
+            return Response(status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, username, course, drive_id=None):
+        password = request.data.get('DrivePassword')
+        email = request.data.get('Email')
+
+        user, error_response, status_code = self.authenticate_user(email, username, course, password)
+        if error_response:
+            return Response(error_response, status=status_code)
+
+        if drive_id is not None:
+            try:
+                drive_data = UsersDriveData.objects.get(id=drive_id, Course=course, Username=username, Email=email)
+                serializer = UsersDriveDataSerializer(drive_data, data=request.data, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except UsersDriveData.DoesNotExist:
+                return Response({'message': 'Drive data not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+        if isinstance(request.data, list):
+            updated_data = []
+            for item in request.data:
+                try:
+                    drive_data = UsersDriveData.objects.get(Course=course, Username=username, Email=email, id=item.get('id'))
+                    serializer = UsersDriveDataSerializer(drive_data, data=item, partial=True)
+                    if serializer.is_valid():
+                        serializer.save()
+                        updated_data.append(serializer.data)
+                    else:
+                        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                except UsersDriveData.DoesNotExist:
+                    return Response({'message': f'Drive data with ID {item.get("id")} not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            return Response(updated_data, status=status.HTTP_200_OK)
+        
+        return Response({'message': 'Invalid data format. Expected a list for batch update.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, username, course, drive_id=None):
+        password = request.data.get('DrivePassword')
+        email = request.data.get('Email')
+        foldername = request.data.get('Folder')
+
+        user, error_response, status_code = self.authenticate_user(email, username, course, password)
+        if error_response:
+            return Response(error_response, status=status_code)
+
+        try:
+            if drive_id is not None:
+                drive_data = UsersDriveData.objects.get(id=drive_id, Course=course, Username=username, Email=email)
+                drive_data.delete()
+            else:
+                drive_data = UsersDriveData.objects.filter(Course=course, Username=username, Email=email, Folder=foldername)
+                deleted_count, _ = drive_data.delete()
+
+                if deleted_count == 0:
+                    return Response({'message': 'No drive data found for the specified folder'}, status=status.HTTP_404_NOT_FOUND)
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except UsersDriveData.DoesNotExist:
+            return Response({'message': 'Drive data not found'}, status=status.HTTP_404_NOT_FOUND)
+
+ 
+def retrieve_digits_from_positions(random_number_string):
+    positions = [7, 13, 25, 37, 43, 55]
+    if len(random_number_string) != 60:
+        raise ValueError("Input must be a 60-character string.")
+    retrieved_digits = [random_number_string[pos] for pos in positions]
+    return ''.join(retrieved_digits)    
+
+@method_decorator(token_required, name='dispatch')
+class CreateUserDrivePassword(APIView):
+
+    def patch(self, request, course, username):
+        email = request.data.get('Email')
+        password = request.data.get('Password')
+        new_drive_password = request.data.get('DrivePassword')
+  
+        res = validateResetOTP(request.data.get('User_Id'), request.data.get('OTP'))
+        if res == 'Invalid':
+            return Response({'message': 'Invalid OTP'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        elif res == 'Error':
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = UsersLoginData.objects.get(Course=course, Username=username, Email=email)
+        except UsersLoginData.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.Permission != 'Access':
+            return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
+
+        if not check_password(password, user.Password):
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if new_drive_password:
+            user.DrivePassword = make_password(new_drive_password)
+            user.save(update_fields=['DrivePassword'])
+            
+            return Response({'message': 'Drive password updated successfully'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'New DrivePassword not provided'}, status=status.HTTP_400_BAD_REQUEST)
+        
+
 class PasswordResetView(APIView):
 
     def post(self, request):
@@ -375,4 +534,3 @@ def validateResetOTP(user_id,otp):
     except Exception as e:
         user.delete()
         return 'Error'
-    
