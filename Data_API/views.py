@@ -69,7 +69,7 @@ class SendMailView(APIView):
         try:
             data = json.loads(request.body)
             Title = data.get('Title')
-            Mail = 'micheal9100@gmail.com'  # Replace with data.get('Mail') if needed
+            Mail = data.get('Mail')
             if data.get('Method') == 'OTP':
                 OTP = str(random.randint(100000, 999999))
             else:
@@ -82,6 +82,11 @@ class SendMailView(APIView):
             }
 
             if data.get('Method') == 'OTP':
+                otp_records = SendOTP.objects.filter(User_Id=otp_data['User_Id'])
+    
+                if otp_records.exists():
+                    otp_records.delete()
+                    
                 serializer = SendOTPSerializer(data=otp_data)
                 if serializer.is_valid():
                     serializer.save()
@@ -98,26 +103,60 @@ class SendMailView(APIView):
                 msg = os.getenv('DJANGO_MAIL_STUDENT_AUTH_OTP_MESSAGE')
             elif Title == 'OTP for Login Authentication':
                 msg = os.getenv('DJANGO_MAIL_STUDENT_LOGIN_OTP_MESSAGE')
+            elif Title == 'OTP for Creating Your Drive Password':
+                msg = os.getenv('DJANGO_MAIL_CREATE_VAULT_PASSWORD_MESSAGE')
+            elif Title == 'New Message From VCube Software Solutions':
+                msg = os.getenv('DJANGO_MAIL_STUDENT_MESSAGE_MAIL')
+            elif Title == 'Your Performance Overview Report is Here.':
+                msg = os.getenv('DJANGO_MAIL_STUDENT_REPORT_MAIL')
             else:
                 return Response({"error": "Invalid title provided."}, status=status.HTTP_400_BAD_REQUEST)
 
+            if Title == 'New Message From VCube Software Solutions':
+                Message = f'''Dear {Name},
+                
+{msg.split('~')[0]}{OTP.split('~')[0]}
 
-            Message = f'''Dear {Name},
+{msg.split('~')[1]} 
+            
+{msg.split('~')[2]} 
+
+{msg.split('~')[3]} 
+
+{msg.split('~')[4]} 
+{msg.split('~')[5]}
+'''
+            elif Title == 'Your Performance Overview Report is Here.':
+                Message = f'''Dear {Name},
+                
+{msg.split('~')[0]}
+
+{msg.split('~')[1]} 
+
+{OTP.split('~')[0]}
+            
+{msg.split('~')[2]} 
+
+{msg.split('~')[3]} 
+
+{msg.split('~')[4]} 
+{msg.split('~')[5]}
+'''
+            else:
+                Message = f'''Dear {Name},
             
 {msg.split('~')[0]}
 
 Your Code: {OTP.split('~')[0]}
 
-{msg.split('~')[1]}   
+{msg.split('~')[1]} 
             
 {msg.split('~')[2]} 
 
 {msg.split('~')[3]} 
 {msg.split('~')[4]}
 '''
-
-            # Send the email
-            # for i in range(0,100):
+                
             send_mail(
                 Title,
                 Message,
@@ -129,5 +168,5 @@ Your Code: {OTP.split('~')[0]}
         except json.JSONDecodeError:
             return Response({"error": "Invalid JSON."}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            print(e)
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
