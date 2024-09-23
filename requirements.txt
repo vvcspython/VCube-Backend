@@ -5,7 +5,6 @@ colorama==0.4.6
 cryptography==43.0.0
 django-cors-headers==4.1.0
 et-xmlfile==1.1.0
-PyMySQL
 mysql==0.0.3
 mysqlclient==2.2.4
 mysql-connector-python==9.0.0
