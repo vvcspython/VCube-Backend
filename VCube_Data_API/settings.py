@@ -16,6 +16,7 @@ import dj_database_url
 import environ
 from datetime import timedelta
 from dotenv import load_dotenv
+import base64
 load_dotenv()
 
 env = environ.Env()
