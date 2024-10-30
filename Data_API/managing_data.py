@@ -1,10 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from .decorators import token_required
 from django.shortcuts import get_object_or_404
 from .models import (
@@ -26,6 +23,8 @@ from .models import (
     PermissionsData,
     FeedbackFormLists,
     ReportData,
+    StudentWeeklyTestResults,
+    StudentRequests
 )
 from .serializers import (
     BatchDataSerializer,
@@ -46,6 +45,8 @@ from .serializers import (
     PermissionsDataSerializer,
     FeedbackFormListsSerializer,
     ReportDataSerializer,
+    StudentWeeklyTestResultsSerializer,
+    StudentRequestsSerializer
 )
 
 
@@ -72,6 +73,8 @@ class ManagingDataView(APIView):
         'permissions_data' : (PermissionsData, PermissionsDataSerializer),
         'feedbackforms-list' : (FeedbackFormLists, FeedbackFormListsSerializer),
         'report-data' : (ReportData, ReportDataSerializer),
+        'weekly-test-results' : (StudentWeeklyTestResults, StudentWeeklyTestResultsSerializer),
+        'weekly-test-requests' : (StudentRequests, StudentRequestsSerializer)
     }
 
     def get_model_and_serializer(self, model_name):
@@ -86,14 +89,13 @@ class ManagingDataView(APIView):
         
         if id is not None:
             try:
-                if model_name in ['student_attendance', 'student_watchtime', 'batch_to_student_messages']:
+                if model_name in ['student_attendance', 'student_watchtime', 'batch_to_student_messages','weekly-test-results','weekly-test-requests']:
                     instances = model.objects.filter(StudentId=id)
                 elif model_name == 'batch_attendance':
                     instances = model.objects.filter(BatchID=id)
                 else:
                     instance = model.objects.get(pk=id)
                     instances = [instance]
-                
                 serializer = serializer_class(instances, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except model.DoesNotExist:
@@ -109,73 +111,154 @@ class ManagingDataView(APIView):
 
     def post(self, request, model_name):
         model, serializer_class = self.get_model_and_serializer(model_name)
+
         if not model:
             return Response({"detail": "Model not found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = serializer_class(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+
+        if isinstance(request.data, dict):
+            data = [request.data]
+        elif isinstance(request.data, list):
+            data = request.data
+        else:
+            return Response({"detail": "Invalid data format."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializers = [serializer_class(data=item) for item in data]
+        errors = []
+
+        for serializer in serializers:
+            if serializer.is_valid():
+                serializer.save()
+                if model_name == 'batch_data':
+                    res = addBatchPermissions(serializer.validated_data)
+                    if not res:
+                        errors.append({"detail": f"Failed to add permissions for {serializer.validated_data}."})
+            else:
+                errors.append(serializer.errors)
+
+        if errors:
+            return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"detail": "All items created successfully."}, status=status.HTTP_201_CREATED)
+
+
+
+    def put(self, request, model_name):
+        model, serializer_class = self.get_model_and_serializer(model_name)
+        
+        if not model:
+            return Response({"detail": "Model not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if isinstance(request.data, dict):
+            data = [request.data]
+        elif isinstance(request.data, list):
+            data = request.data
+        else:
+            return Response({"detail": "Invalid data format."}, status=status.HTTP_400_BAD_REQUEST)
+
+        errors = []
+        updated_instances = []
+
+        for item in data:
+            object_id = item.get('id')
+            if object_id is None:
+                errors.append({"detail": "ID not provided."})
+                continue
             
-            if model_name == 'batch_data':
-                res = addBatchPermissions(request.data)
-                if not res:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
+            instance = get_object_or_404(model, pk=object_id)
+            serializer = serializer_class(instance=instance, data=item)
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if serializer.is_valid():
+                serializer.save()
+                updated_instances.append(serializer.data)
+            else:
+                errors.append(serializer.errors)
 
+        if errors:
+            return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request, model_name, id=None):
-        model, serializer_class = self.get_model_and_serializer(model_name)
-        if not model:
-            return Response({"detail": "Model not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"updated_instances": updated_instances}, status=status.HTTP_200_OK)
 
-        object_id = id or request.data.get('id')
-        
-        if object_id is None:
-            return Response({"detail": "ID not provided."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        instance = get_object_or_404(model, pk=object_id)
-
-        serializer = serializer_class(instance=instance, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-    def patch(self, request, model_name, id=None):
+    def patch(self, request, model_name):
         model, serializer_class = self.get_model_and_serializer(model_name)
+
         if not model:
             return Response({"detail": "Model not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        object_id = id or request.data.get('id')
         
-        if object_id is None:
-            return Response({"detail": "ID not provided."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        instance = get_object_or_404(model, pk=object_id) 
+        if isinstance(request.data, dict):
+            data = [request.data]
+        elif isinstance(request.data, list):
+            data = request.data
+        else:
+            return Response({"detail": "Invalid data format."}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = serializer_class(instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+        errors = []
+        updated_instances = []
+
+        for item in data:
+            object_id = item.get('id')
+            if object_id is None:
+                errors.append({"detail": "ID not provided."})
+                continue
+            
+            instance = get_object_or_404(model, pk=object_id)
+            serializer = serializer_class(instance, data=item, partial=True)
+
+            if serializer.is_valid():
+                serializer.save()
+                updated_instances.append(serializer.data)
+            else:
+                errors.append(serializer.errors)
+
+        if errors:
+            return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"updated_instances": updated_instances}, status=status.HTTP_200_OK)
+
 
     def delete(self, request, model_name, id=None):
         model, serializer_class = self.get_model_and_serializer(model_name)
+
         if not model:
             return Response({"detail": "Model not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        object_id = id or request.data.get('id')
+        if id is not None:
+            try:
+                instance = get_object_or_404(model, pk=id)
+                instance.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Exception as e:
+                return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        if object_id is None:
-            return Response({"detail": "ID not provided."}, status=status.HTTP_400_BAD_REQUEST)
+        if isinstance(request.data, dict):
+            data = [request.data]
+        elif isinstance(request.data, list):
+            data = request.data
+        else:
+            return Response({"detail": "Invalid data format."}, status=status.HTTP_400_BAD_REQUEST)
 
-        instance = get_object_or_404(model, pk=object_id)
+        errors = []
+        deleted_ids = []
         
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        for item in data:
+            object_id = item.get('id')
+            if object_id is None:
+                errors.append({"detail": "ID not provided."})
+                continue
+
+            try:
+                instance = get_object_or_404(model, pk=object_id)
+                instance.delete()
+                deleted_ids.append(object_id)
+            except Exception as e:
+                errors.append({"id": object_id, "detail": str(e)})
+
+        if errors:
+            return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"deleted_ids": deleted_ids}, status=status.HTTP_204_NO_CONTENT)
+
 
 
 @method_decorator(token_required, name='dispatch')
@@ -196,7 +279,6 @@ class ManageStudentData(APIView):
     def delete(self, request):
         course = request.data.get('Course')
         batch = request.data.get('BatchName')
-        
         if not course or not batch:
             return Response({'error': 'Course and BatchName are required'}, status=status.HTTP_400_BAD_REQUEST)
         
