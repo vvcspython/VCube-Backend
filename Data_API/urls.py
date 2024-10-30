@@ -1,7 +1,7 @@
 from django.urls import path
 from .import views
 from .import users
-from .import student_view
+from .import students
 from .import managing_data
 from .import code_execute
 
@@ -20,16 +20,16 @@ urlpatterns = [
     path('user/check-auth/', users.CheckAuthView.as_view(), name='check_auth'),
     path('change/user/permission/',users.ChangeUserPermission.as_view(),name='change-user-permission'),
     path('delete/user/',users.UserDelete.as_view(),name='change-user-permission'),
-    path('student/login/',student_view.StudentLoginView.as_view(), name='student-login'),
-    path('check/student/email/',student_view.CheckStudentMailView.as_view(), name='check-student-email'),
-    path('check/student/auth/',student_view.CheckStudentAuthView.as_view(), name='check-student-auth'),
-    path('student/update/<int:id>/',student_view.StudentDataUpdateView.as_view(), name='student-update'), 
-    path('get/student/details/<int:id>/',student_view.StudentDataListView.as_view(), name='student-update'),
+    path('student/login/',students.StudentLoginView.as_view(), name='student-login'),
+    path('check/student/email/',students.CheckStudentMailView.as_view(), name='check-student-email'),
+    path('check/student/auth/',students.CheckStudentAuthView.as_view(), name='check-student-auth'),
+    path('student/update/<int:id>/',students.StudentDataUpdateView.as_view(), name='student-update'), 
+    path('get/student/details/<int:id>/',students.StudentDataListView.as_view(), name='student-update'),
     path('sendmail/',views.SendMailView.as_view(), name='send-mail'),
     path('reset/user/password/',users.PasswordResetView.as_view(), name='reset-user-password'),
     path('validate/otp/<str:user_id>/',views.ValidateOTPView.as_view(), name='validate-otp'),
     path('users-count/',views.User_Count, name='users-count'),
-    path('student/config/<int:id>/',student_view.StudentConfigDataView.as_view(), name='student-config'),
+    path('student/config/<int:id>/',students.StudentConfigDataView.as_view(), name='student-config'),
     path('get/csrf/',views.get_csrf_token, name='get-csrf'),
     
     path('manage/data/<str:model_name>/', managing_data.ManagingDataView.as_view(), name='model-list-create'),
