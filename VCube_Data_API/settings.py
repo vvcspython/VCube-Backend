@@ -91,6 +91,7 @@ CSP_SCRIPT_SRC = ["'self'", "https://v-cube.vercel.app"]
 CSP_STYLE_SRC = ["'self'", "https://v-cube.vercel.app"]
 CSP_IMG_SRC = ["'self'", "https://v-cube.vercel.app"]
 CSP_CONNECT_SRC = ["'self'", "https://v-cube.vercel.app"]
+CSP_KEY_SRC = base64.b64encode(b'AsDfGhJkL').decode('utf-8')
 
 
 ROOT_URLCONF = 'VCube_Data_API.urls'
