@@ -19,9 +19,9 @@ from rest_framework import status
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
 
-#Connected to python anywhere
+
 def get_csrf_token(request):
-    print('csrftoken' ,get_token(request))#JUst now added
+    print('csrftoken' ,get_token(request))
     return JsonResponse({'csrfToken': get_token(request)})
 
 @api_view(['GET'])
